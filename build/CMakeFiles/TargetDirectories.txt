@@ -1,3 +1,0 @@
-/home/twoninefour/hdd/hackgsu/3dont/build/CMakeFiles/rebuild_cache.dir
-/home/twoninefour/hdd/hackgsu/3dont/build/CMakeFiles/edit_cache.dir
-/home/twoninefour/hdd/hackgsu/3dont/build/CMakeFiles/main.dir

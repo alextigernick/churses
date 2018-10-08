@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/twoninefour/hdd/hackgsu/3dont/build",
-  "command": "/usr/bin/g++-7    -g   -o CMakeFiles/main.dir/src/main.cpp.o -c /home/twoninefour/hdd/hackgsu/3dont/src/main.cpp",
-  "file": "/home/twoninefour/hdd/hackgsu/3dont/src/main.cpp"
-}
-]
