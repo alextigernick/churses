@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/twoninefour/hdd/hackgsu/3dont/src/main.cpp
+ncurses.h
+-
+string.h
+-
+iostream
+-
+signal.h
+-
+sys/ioctl.h
+-
+
