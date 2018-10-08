@@ -17,14 +17,14 @@ struct Board {
     piece places[64];
     Board(){
         piece *lego = &places[0]; 
-        *lego = piece{piece::ROOK,true};++lego;
-        *lego = piece{piece::KNIGHT,true};++lego;
-        *lego = piece{piece::BISHOP,true};++lego;
-        *lego = piece{piece::KING,true};++lego;
-        *lego = piece{piece::QUEEN,true};++lego;
-        *lego = piece{piece::BISHOP,true};++lego;
-        *lego = piece{piece::KNIGHT,true};++lego;
-        *lego = piece{piece::ROOK,true};++lego;
+        *lego++ = piece{piece::ROOK,true};
+        *lego++ = piece{piece::KNIGHT,true};
+        *lego++ = piece{piece::BISHOP,true};
+        *lego++ = piece{piece::KING,true};
+        *lego++ = piece{piece::QUEEN,true};
+        *lego++ = piece{piece::BISHOP,true};
+        *lego++ = piece{piece::KNIGHT,true};
+        *lego++ = piece{piece::ROOK,true};
         for(int i = 0; i < 8; ++i,++lego){
             *lego = piece{piece::PAWN,true};
         }
@@ -34,14 +34,14 @@ struct Board {
         for(int i = 0; i < 8; ++i,++lego){
             *lego = piece{piece::PAWN,false};
         }
-        *lego = piece{piece::ROOK,false};++lego;
-        *lego = piece{piece::KNIGHT,false};++lego;
-        *lego = piece{piece::BISHOP,false};++lego;
-        *lego = piece{piece::KING,false};++lego;
-        *lego = piece{piece::QUEEN,false};++lego;
-        *lego = piece{piece::BISHOP,false};++lego;
-        *lego = piece{piece::KNIGHT,false};++lego;
-        *lego = piece{piece::ROOK,false};++lego;
+        *lego++ = piece{piece::ROOK,false};
+        *lego++ = piece{piece::KNIGHT,false};
+        *lego++ = piece{piece::BISHOP,false};
+        *lego++ = piece{piece::KING,false};
+        *lego++ = piece{piece::QUEEN,false};
+        *lego++ = piece{piece::BISHOP,false};
+        *lego++ = piece{piece::KNIGHT,false};
+        *lego++ = piece{piece::ROOK,false};
     }
 };
 Board board;
