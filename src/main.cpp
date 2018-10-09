@@ -3,17 +3,19 @@
 #include <iostream>
 #include <signal.h>
 #include <sys/ioctl.h>
-
+#include <vector>
 int h, w, sz;
 WINDOW *boardWin,*info;
 void startup();
 void resizeHandler(int sig);
 void add_wchar(int c);
 typedef std::pair<char,char> pos;
-pos click1;
+typedef std::vector<pos> posList;
+pos click1(-1,-1);
+posList highlight;
 struct Board {
     struct piece{
-        enum shape { NONE, PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING };
+        enum shape { NONE = 0, PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING };
         shape type;
         bool color;
         char getChar() {
@@ -68,10 +70,59 @@ struct Board {
         *lego++ = piece{piece::BISHOP,true};
         *lego++ = piece{piece::KING,true};
         *lego++ = piece{piece::QUEEN,true};
-
         *lego++ = piece{piece::BISHOP,true};
         *lego++ = piece{piece::KNIGHT,true};
         *lego++ = piece{piece::ROOK,true};
+    }
+    int map(pos p){
+        return map(p.first,p.second);
+    }
+    int map(int x, int y){
+        return (side?0:63)+(y*8 + x)*(side?1:-1);
+    }
+    pos imap(int i){
+        if(side)
+            return pos(i%8,i/8);
+        return pos((63-i)%8,(63-i)/8);
+        
+    }
+    void moves(pos &p, posList &l){
+        l.clear();
+        int x = p.first, y = p.second;
+        piece &given = places[map(x,y)];
+        switch(given.type){
+            case piece::NONE:
+                break;
+            case piece::PAWN:
+                if(given.color){
+                    if(places[map(x,y)-8].type == piece::NONE){
+                        l.push_back(imap(map(x,y)-8));
+                        if(47 < map(x,y) && map(x,y) < 56 && places[map(x,y)-16].type == piece::NONE) {
+                            l.push_back(imap(map(x,y)-16));
+                        }
+                    }
+                }
+                else {
+                    if(places[map(x,y)+8].type == piece::NONE){
+                        l.push_back(imap(map(x,y)+8));
+                        if(7 < map(x,y) && map(x,y) < 16 && places[map(x,y)+16].type == piece::NONE) {
+                            l.push_back(imap(map(x,y)+16));
+                        }
+                    }
+                }
+                break;
+            case piece::ROOK:
+                break;
+            case piece::KNIGHT:
+                break;
+            case piece::BISHOP:
+                break;
+            case piece::QUEEN:
+                break;
+            case piece::KING:
+                break;
+        }
+        //(*l).push_back;
     }
 };
 Board board;
@@ -80,15 +131,25 @@ void draw_board(){
     int color = 1,dex = board.side?63:0,inc = board.side?-1:1;
     wattron(boardWin,COLOR_PAIR(color+1));
     cchar_t t;
+    bool in;
     for(int sqh = 0; sqh < 8; ++sqh){
         for(int j = 0; j < sz/2; ++j){
             for(int sqw = 0; sqw < 8; ++sqw){
                 for(int i = 0; i < sz; ++i){
-                    if (i == 1 && ((j != 0 && j != sz/2 - 1) || sz/2 < 3) && board.places[dex+(sqh*8 + sqw)*inc].type != Board::piece::NONE)
+                    in = false;
+                    for(int k = 0; k < highlight.size(); ++k){
+                        if(highlight.at(k).first == sqw && highlight.at(k).second == sqh){
+                            in = true;
+                            break;
+                        }
+                    }
+                    if (in)
+                        wattron(boardWin,COLOR_PAIR(6));  
+                    else if (i == 1 && ((j != 0 && j != sz/2 - 1) || sz/2 < 3) && board.places[dex+(sqh*8 + sqw)*inc].type != Board::piece::NONE)
                         wattron(boardWin,board.places[dex+(sqh*8 + sqw)*inc].color?COLOR_PAIR(5):COLOR_PAIR(4));
                     else if (i == 0 || i == sz-1)
                         if(sqw == click1.first && sqh == click1.second && board.places[dex+(sqh*8 + sqw)*inc].type != Board::piece::NONE)
-                            wattron(boardWin,COLOR_PAIR(6));    
+                            wattron(boardWin,COLOR_PAIR(7));    
                         else
                             wattron(boardWin,COLOR_PAIR(color+1)); 
                     if(i == sz/2 && j == sz/4 && board.places[dex+(sqh*8 + sqw)*inc].type != Board::piece::NONE) 
@@ -97,11 +158,11 @@ void draw_board(){
                         waddch(boardWin, ' ');
                 }
                 color = !color;
-                wattron(boardWin,COLOR_PAIR(color+1));
+                //wattron(boardWin,COLOR_PAIR(color+1));
             }
         }
         color = !color;
-        wattron(boardWin,COLOR_PAIR(color+1));
+        //wattron(boardWin,COLOR_PAIR(color+1));
     }
     wrefresh(boardWin);
 }
@@ -129,14 +190,16 @@ void startup(){
     init_color(0, 12, 141, 302);
     init_color(1, 965, 500, 149);
     init_color(2, 0, 0, 0);
-    init_color(3, 1000, 1000, 1000);
+    init_color(3, 750, 750, 750);
     init_color(4, 800, 200, 200);
+    init_color(5, 200, 800, 200);
     init_pair(1,0,0);//black background
     init_pair(2,1,1);//white background
     init_pair(3,3,2);//blueish background
     init_pair(4,2,3);//dark gray square white text
     init_pair(5,3,2);//light gray square black text;
     init_pair(6,4,4);
+    init_pair(7,5,5);
     bkgd(COLOR_PAIR(3));
     refresh();
     draw_board();
@@ -169,6 +232,7 @@ int main (int argc, char **argv)
     sigaction(SIGWINCH, &sa, NULL);
     MEVENT event;
     int ch,x,y;
+    bool in;
     while (1) {
         if ((ch = getch()) == ERR) {
         }
@@ -185,9 +249,29 @@ int main (int argc, char **argv)
                 case KEY_MOUSE:
                     if(getmouse(&event) == OK){
                         if(event.bstate & BUTTON1_PRESSED){
-                            click1 = pos((event.x-(*boardWin)._begx)/sz,(2*(event.y-(*boardWin)._begy))/sz);
-                            draw_board();
-                            wrefresh(boardWin);
+                            x = (event.x-(*boardWin)._begx)/sz;
+                            y = (2*(event.y-(*boardWin)._begy))/sz;
+                            if(0 <= x && x < 8 && 0 <= y && x < 8) {
+                                in = false;
+                                waddstr(info,("\n"+std::to_string(x)+" "+std::to_string(y)).c_str());
+                                wrefresh(info);
+                                for(int k = 0; k < highlight.size(); ++k){
+                                    if(highlight.at(k).first == x && highlight.at(k).second == y){
+                                        in = true;
+                                        break;
+                                    }
+                                }
+                                if(in) {
+                                    board.places[board.map(x,y)] = board.places[board.map(click1)];
+                                    board.places[board.map(click1)] = Board::piece{Board::piece::NONE,false};;
+                                }
+                                else {
+                                    click1 = pos(x,y);
+                                    board.moves(click1,highlight);
+                                }
+                                draw_board();
+                                wrefresh(boardWin);    
+                            }
                             //board.side = !board.side;
                             //draw_board();
                         }
